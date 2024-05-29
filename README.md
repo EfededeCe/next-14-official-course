@@ -101,7 +101,7 @@ export default function Layout({ children }: { children: React.ReactNode }) {
 }
 ```
 
-Resiven por prop un objeto children que puede ser tanto las páginas que va a 'cubrir' como otros layouts
+Reciben por prop un objeto children que puede ser tanto las páginas que va a 'cubrir' como otros layouts
 
 ## Link component
 
@@ -130,3 +130,19 @@ Si hay navegación con `<Link>`, se raliza un prefetch de las páginas a donde a
 ## Links activos
 
 Para saber en qué página se está, se marca el link de la página, esto se puede hacer tomando el peth de la URL y en base a ese path poner un estilo distinto al link activo.
+
+## [Postgres connection](https://vercel.com/docs/storage/vercel-postgres/sdk)
+
+Para conectar a la db postgres creada en la instancia de Vercel, se crean las variables de entorno necesarias y se usa la función `sql`, que pasándole una query sql usa la conexión a la db para enviar la petición.
+
+```js
+const { db } = require('@vercel/postgres');
+//...
+const client = await db.connect();
+await client.sql`CREATE EXTENSION IF NOT EXISTS "uuid-ossp"`;
+    // Create the "users" table if it doesn't exist
+    const createTable = await client.sql`
+      CREATE TABLE IF NOT EXISTS users (
+        await seedUsers(client);
+//...
+```
