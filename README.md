@@ -146,3 +146,57 @@ await client.sql`CREATE EXTENSION IF NOT EXISTS "uuid-ossp"`;
         await seedUsers(client);
 //...
 ```
+
+## [Fetching Data](https://nextjs.org/learn/dashboard-app/fetching-data)
+
+### API layer
+
+Se pueden crear endpoints de API con los [Route Handlers](https://nextjs.org/docs/app/building-your-application/routing/route-handlers)
+
+### Server components
+
+- Se puede usar `async/await` sin necesidad de `useEffect` ni `useState`.
+- Se ejecuta en servidor, al resolver se envía el componente.
+- Se puede hacer una petición a la BD de forma segura sin una API de por medio
+
+### Server rendering strategies
+
+Hay 3 estrategias distintas de SSR en Nextjs:
+
+- Static rendering:
+  - Se genera el render en tiempo de construcción de la página (build) si tiene que hacer fetching de datos, los hace una sola vez y queda cacheado, o cuando se hace una revalidadción del cache.
+- Dynamic Rendering:
+  - También realiza el render en el servidor, pero en tiempo de petición (request), por lo tanto cada vez que un usuario pide una página el servidor realiza un nuevo render, permitiendo ver datos actualizados, sin guardar en un cache, aunque puede tardar un poco más la respuesta, dependiendo de los procesos de fetching que lleve a cabo.
+- Streaming:
+  - Al igual que antes, renderiza en el servidor, pero va enviando los datos de la respuesta, separada en partes (chunks) con sentido propio, por ejemplo, se va enviando de a componentes, primero los más rápidos en renderizarse. Así el usuario puede interactuar con la pagina sin que esté del todo cargada
+
+Por defecto next realiza Static Rendering, si se requiere que una página realice Synamic Rendering se puede utilizar la herramienta `unstable_noStore`:
+
+```js
+import { unstable_noStore as noStore } from 'next/cache';
+
+export async function fetchRevenue() {
+  // Add noStore() here to prevent the response from being cached.
+  // This is equivalent to in fetch(..., {cache: 'no-store'}).
+  noStore();
+
+```
+
+También se puede usar `{cache: 'no-store'}` en la función fetch para obtener una página dinámica (renderizado en tiempo de petición).
+
+## Streaming
+
+Hay dos formas de realizar un streaming:
+
+- A nivel de página, con el archivo loading.js.
+- Para componentes específicos, con `<Suspense>`.
+
+### loading.js...
+
+El archivo loading es un archivo especial, y permite crear un componente que será renderizado como 'fallback' mientras carga una parte de la página. De esta manera, los componentes estáticos con mostrados inicialmente, mientras que los dinámicos esperan a a que estén todos listos para mostrarse, produciendose así el `Streaming`.
+
+### Suspense
+
+Con el componente `<Suspense>` se puede envolver otro componente que tenga algún proceso que demande tiempo, de esta manera se aísla el componente envuelto y se separa del resto de componentes dinámicos, haciendo que los demás puedan enviarse en una primera parte del stream y cuando se completen los procesos internos de este componente, también se envíe.
+
+En ambos casos se puede usar un componente de placeholder o fallback, que se renderiza de forma estática, para mostrar algo en la pantalla hasta que se cargan los componentes.
